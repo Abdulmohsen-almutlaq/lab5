@@ -442,64 +442,92 @@ const data = [
   },
 ];
 
-document.addEventListener("DOMContentLoaded", function () {
-  const tableBody = document.getElementById("player-rows");
-  const teamFilter = document.getElementById("team-filter");
-  const darkModeToggle = document.getElementById("dark-mode-toggle");
-  const searchInput = document.getElementById("search");
+const tableBody = document.getElementById("player-rows");
+const teamFilter = document.getElementById("team-filter");
+const darkModeToggle = document.getElementById("dark-mode-toggle");
+const searchInput = document.getElementById("search");
 
-  // Render table rows for a given list of players
-  function renderRows(players) {
-    tableBody.innerHTML = "";
-    players.forEach((player) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-                <td>${player.name}</td>
-                <td>${player.team}</td>
-                <td>${player.points}</td>
-                <td>${player.rebounds}</td>
-                <td>${player.assists}</td>
-                <td>${player.blocks}</td>
-                <td>${player.turnovers}</td>
-            `;
-      tableBody.appendChild(row);
+function renderRows(players) {
+  tableBody.innerHTML = "";
+  players.forEach((player) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+              <td><b>${player.name}</td>
+              <td><b>${player.team}</td>
+              <td><b>${player.points}</td>
+              <td><b>${player.rebounds}</td>
+              <td><b>${player.assists}</td>
+              <td><b>${player.blocks}</td>
+              <td><b>${player.turnovers}</td>
+          `;
+    tableBody.appendChild(row);
+  });
+}
+
+function filterPlayers() {
+  var selectedTeam = teamFilter.value; // Get the selected team from the dropdown
+  var filteredData; // Declare a variable to store the filtered list of players
+
+  if (selectedTeam === "all") {
+    // all teams
+    filteredData = data;
+  } else {
+    // filter by team
+    filteredData = data.filter(function (player) {
+      return player.team.indexOf(selectedTeam) !== -1; // Check if the player's team matches the selected team
     });
   }
 
-  const teams = data.map((player) => player.team);
-  const uniqueTeams = [...new Set(teams)];
+  // Update the table with the filtered list of players
+  renderRows(filteredData);
+}
 
+
+
+
+function populateTeams(players) {
+  let uniqueTeams = [];
+  data.forEach((player) => {
+    if (!uniqueTeams.includes(player.team)) {
+      uniqueTeams.push(player.team);
+    }
+  });
   uniqueTeams.forEach((team) => {
     const option = document.createElement("option");
     option.value = team;
-    option.textContent = team;
-    teamFilter.appendChild(option); // adding options to the dropdown
+    option.innerText = team;
+    teamFilter.appendChild(option);
   });
+}
 
-  function filterPlayers() {
-    var selectedTeam = teamFilter.value; // Get the selected team from the dropdown
-    var filteredData; // Declare a variable to store the filtered list of players
 
-    if (selectedTeam === "all") {
-      // all teams
-      filteredData = data;
+
+
+
+
+
+
+function dofilter(row,column,value){
+  for (let i = 1; i < row.length; i++) {
+    let td = row[i].getElementsByTagName("td")[column];
+    let txt = td.innerText;
+    if (txt.toLowerCase().indexOf(value) > -1) {
+      row[i].style.display = "";
     } else {
-      // filter by team
-      filteredData = data.filter(function (player) {
-        return player.team.indexOf(selectedTeam) !== -1; // Check if the player's team matches the selected team
-      });
+      row[i].style.display = "none";
     }
-
-    // Update the table with the filtered list of players
-    renderRows(filteredData);
   }
-  searchInput.addEventListener("keyup", function () {
-    const value = searchInput.value.toLowerCase();
+}
 
-    const filteredData = data.filter(function (player) {
-      return player.name.toLowerCase().includes(value);
-    });
-    renderRows(filteredData);
+document.addEventListener("DOMContentLoaded", function () {
+  renderRows(data);
+  populateTeams(data);
+
+  searchInput.addEventListener("keyup", function (e) {
+    let name = e.target.value.toLowerCase();
+    console.log(name);
+    let row = document.querySelectorAll("#player-rows tr");
+    dofilter(row,0,name);
   });
 
   teamFilter.addEventListener("change", filterPlayers);
@@ -509,6 +537,4 @@ document.addEventListener("DOMContentLoaded", function () {
     // Toggle the 'dark-mode' class on the body element
     document.body.classList.toggle("dark-mode");
   });
-
-  renderRows(data);
 });
